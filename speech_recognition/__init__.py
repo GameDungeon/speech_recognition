@@ -1615,21 +1615,16 @@ class PortableNamedTemporaryFile(object):
 # During the pip install process, the 'import speech_recognition' command in setup.py is executed.
 # At this time, the dependencies are not yet installed, resulting in a ModuleNotFoundError.
 # This is a workaround to resolve this issue
-try:
-    from .recognizers import google, google_cloud, pocketsphinx, vosk
-    from .recognizers.whisper_api import groq, openai
-    from .recognizers.whisper_local import faster_whisper, whisper
-except (ModuleNotFoundError, ImportError):
-    pass
-else:
-    Recognizer.recognize_google = google.recognize_legacy
-    Recognizer.recognize_google_cloud = google_cloud.recognize
-    Recognizer.recognize_whisper = whisper.recognize
-    Recognizer.recognize_faster_whisper = faster_whisper.recognize
-    Recognizer.recognize_openai = openai.recognize
-    Recognizer.recognize_groq = groq.recognize
-    Recognizer.recognize_sphinx = pocketsphinx.recognize
-    Recognizer.recognize_vosk = vosk.recognize
+# Recognizer.recognize_google = google.recognize_legacy
+# Recognizer.recognize_google_cloud = google_cloud.recognize
+# Recognizer.recognize_whisper = whisper.recognize
+from .recognizers.whisper_local import faster_whisper
+
+Recognizer.recognize_faster_whisper = faster_whisper.recognize
+# Recognizer.recognize_openai = openai.recognize
+# Recognizer.recognize_groq = groq.recognize
+# Recognizer.recognize_sphinx = pocketsphinx.recognize
+# Recognizer.recognize_vosk = vosk.recognize
 
 
 # ===============================

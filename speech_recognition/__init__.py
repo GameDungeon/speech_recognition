@@ -482,10 +482,8 @@ class Recognizer(AudioSource):
             self.energy_threshold = self.energy_threshold * damping + target_energy * (1 - damping)
 
     def openwakeword_wait_for_wakeword(self, model, source):
-        import openwakeword
-
         while True:
-            audio = np.frombuffer(source.stream.read(source.CHUNK), dtype=np.int16)
+            source.stream.read(source.CHUNK)
 
             model.predict(audio)
 

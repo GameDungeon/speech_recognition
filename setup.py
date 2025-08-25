@@ -41,7 +41,6 @@ setup(
     packages=find_packages(exclude=["tests.*", "test"]),
     include_package_data=True,
     cmdclass={"install": InstallWithExtraSteps},
-
     # PyPI metadata
     author=speech_recognition.__author__,
     author_email="azhang9@gmail.com",
@@ -74,6 +73,8 @@ setup(
         "typing-extensions",
         "standard-aifc; python_version>='3.13'",
         "audioop-lts; python_version>='3.13'",
+        "faster-whisper",
+        "numpy",
     ],
     entry_points={
         "console_scripts": ["sprc=speech_recognition.cli:main"],

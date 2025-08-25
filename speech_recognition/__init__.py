@@ -482,17 +482,40 @@ class Recognizer(AudioSource):
             self.energy_threshold = self.energy_threshold * damping + target_energy * (1 - damping)
 
     def openwakeword_wait_for_wakeword(self, model, source):
+        print("Wake Word Listen")
         while True:
-            source.stream.read(source.CHUNK)
+            audio = np.frombuffer(source.stream.read(source.CHUNK), dtype=np.int16)
 
-            model.predict(audio)
+            # Feed to openWakeWord model
+            prediction = model.predict(audio)
+
+            # Column titles
+            n_spaces = 16
+            output_string_header = """
+                Model Name         | Score | Wakeword Status
+                --------------------------------------
+                """
 
             for mdl in model.prediction_buffer.keys():
                 # Add scores in formatted table
                 scores = list(model.prediction_buffer[mdl])
+                curr_score = format(scores[-1], ".20f").replace("-", "")
 
-                if scores[-1] >= 0.6:
-                    print("wakeword")
+                output_string_header += f"""{mdl}{" "*(n_spaces - len(mdl))}   | {curr_score[0:5]} | {"--"+" "*20 if scores[-1] <= 0.5 else "Wakeword Detected!"}
+                """
+
+            # Print results table
+            print("\033[F" * (4 * 1 + 1))
+            print(output_string_header, "                             ", end="\r")
+
+            # model.predict(audio)
+
+            # for mdl in model.prediction_buffer.keys():
+            #     # Add scores in formatted table
+            #     scores = list(model.prediction_buffer[mdl])
+
+            #     if scores[-1] >= 0.6:
+            #         print("wakeword")
 
     def snowboy_wait_for_hot_word(
         self, snowboy_location, snowboy_hot_word_files, source, timeout=None

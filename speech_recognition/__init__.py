@@ -508,6 +508,7 @@ class Recognizer(AudioSource):
                 scores = list(model.prediction_buffer[mdl])
 
                 if scores[-1] >= 0.6:
+                    model.reset()
                     print("wakeword")
                     return b"".join(frames), elapsed_time
 

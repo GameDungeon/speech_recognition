@@ -485,8 +485,8 @@ class Recognizer(AudioSource):
 
         seconds_per_buffer = float(source.CHUNK) / source.SAMPLE_RATE
 
-        # buffer capable of holding 3 seconds of original audio
-        frame_buffer_count = int(math.ceil(3 / seconds_per_buffer))
+        # buffer capable of holding 2 seconds of original audio
+        frame_buffer_count = int(math.ceil(2 / seconds_per_buffer))
         frames = collections.deque(maxlen=frame_buffer_count)
         elapsed_time = 0
 

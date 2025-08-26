@@ -490,7 +490,6 @@ class Recognizer(AudioSource):
         frames = collections.deque(maxlen=frame_buffer_count)
         elapsed_time = 0
 
-        print("Wake Word Listen")
         while True:
             elapsed_time += seconds_per_buffer
             buffer = source.stream.read(source.CHUNK)
@@ -509,7 +508,6 @@ class Recognizer(AudioSource):
 
                 if scores[-1] >= 0.6:
                     model.reset()
-                    print("wakeword")
                     return b"".join(frames), elapsed_time
 
         return b"".join(frames), elapsed_time

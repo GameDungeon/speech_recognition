@@ -482,40 +482,36 @@ class Recognizer(AudioSource):
             self.energy_threshold = self.energy_threshold * damping + target_energy * (1 - damping)
 
     def openwakeword_wait_for_wakeword(self, model, source):
+
+        seconds_per_buffer = float(source.CHUNK) / source.SAMPLE_RATE
+
+        # buffer capable of holding 3 seconds of original audio
+        frame_buffer_count = int(math.ceil(3 / seconds_per_buffer))
+        frames = collections.deque(maxlen=frame_buffer_count)
+        elapsed_time = 0
+
         print("Wake Word Listen")
         while True:
-            audio = np.frombuffer(source.stream.read(source.CHUNK), dtype=np.int16)
+            elapsed_time += seconds_per_buffer
+            buffer = source.stream.read(source.CHUNK)
+            if len(buffer) == 0:
+                break  # reached end of the stream
+            frames.append(buffer)
+
+            audio = np.frombuffer(buffer, dtype=np.int16)
 
             # Feed to openWakeWord model
-            prediction = model.predict(audio)
-
-            # Column titles
-            n_spaces = 16
-            output_string_header = """
-                Model Name         | Score | Wakeword Status
-                --------------------------------------
-                """
+            model.predict(audio)
 
             for mdl in model.prediction_buffer.keys():
                 # Add scores in formatted table
                 scores = list(model.prediction_buffer[mdl])
-                curr_score = format(scores[-1], ".20f").replace("-", "")
 
-                output_string_header += f"""{mdl}{" "*(n_spaces - len(mdl))}   | {curr_score[0:5]} | {"--"+" "*20 if scores[-1] <= 0.5 else "Wakeword Detected!"}
-                """
+                if scores[-1] >= 0.6:
+                    print("wakeword")
+                    return b"".join(frames), elapsed_time
 
-            # Print results table
-            print("\033[F" * (4 * 1 + 1))
-            print(output_string_header, "                             ", end="\r")
-
-            # model.predict(audio)
-
-            # for mdl in model.prediction_buffer.keys():
-            #     # Add scores in formatted table
-            #     scores = list(model.prediction_buffer[mdl])
-
-            #     if scores[-1] >= 0.6:
-            #         print("wakeword")
+        return b"".join(frames), elapsed_time
 
     def snowboy_wait_for_hot_word(
         self, snowboy_location, snowboy_hot_word_files, source, timeout=None
@@ -663,7 +659,10 @@ class Recognizer(AudioSource):
                     break  # reached end of the stream
                 frames.append(buffer)
             elif openwakeword_model is not None:
-                self.openwakeword_wait_for_wakeword(openwakeword_model, source)
+                buffer, delta_time = self.openwakeword_wait_for_wakeword(openwakeword_model, source)
+                if len(buffer) == 0:
+                    break  # reached end of the stream
+                frames.append(buffer)
             else:
                 # store audio input until the phrase starts
                 while True:
